@@ -13,4 +13,20 @@ class Posts
     {
 
     }
+
+    public function getUuid(): UUID {
+        return $this->uuid;
+    }
+
+    public function getAuthorUuid(): UUID {
+        return $this->authorUuid;
+    }
+
+    public function getTitle(): string {
+        return $this->title;
+    }
+
+    public function getText(): string {
+        return $this->text;
+    }
 }
