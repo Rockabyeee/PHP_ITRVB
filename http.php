@@ -1,8 +1,12 @@
 <?php
 
 use my\Http\Actions\Comments\CreateComment;
+use my\Http\Actions\CommentsLikes\CreateCommentLike;
+use my\Http\Actions\CommentsLikes\GetByUuidCommentLikes;
 use my\Http\Actions\Posts\CreatePost;
 use my\Http\Actions\Posts\DeletePost;
+use my\Http\Actions\PostsLikes\CreatePostLike;
+use my\Http\Actions\PostsLikes\GetByUuidPostLikes;
 use my\Http\Actions\Users\FindByUsername;
 use my\Http\ErrorResponse;
 use my\Http\Request;
@@ -10,7 +14,7 @@ use my\Repositories\CommentsRepository;
 use my\Repositories\PostsRepository;
 use my\Repositories\UsersRepository;
 
-require 'vendor/autoload.php';
+$container = require __DIR__ . '/bootstrap.php';
 
 try {
     $request = new Request($_GET, $_POST, $_SERVER);
@@ -35,30 +39,18 @@ try {
 
 $routs = [
     'GET' => [
-        '/users/show' => new FindByUsername(
-            new UsersRepository(
-                new PDO('sqlite:'.__DIR__.'/blog.sqlite')
-            )
-        )
+        '/users/show' => FindByUsername::class,
+        '/likes/comment' => GetByUuidCommentLikes::class,
+        '/likes/post' => GetByUuidPostLikes::class,
     ],
     'POST' => [
-        '/posts/comment' => new CreateComment(
-            new CommentsRepository(
-                new PDO('sqlite:'.__DIR__.'/blog.sqlite')
-            )
-        ),
-        '/posts/create' => new CreatePost(
-            new PostsRepository(
-                new PDO('sqlite:'.__DIR__.'/blog.sqlite')
-            )
-        )
+        '/posts/comment' => CreateComment::class,
+        '/posts/' => CreatePost::class,
+        '/likes/post/' => CreatePostLike::class,
+        '/likes/comment/' => CreateCommentLike::class
     ],
     'DELETE' => [
-        '/posts' => new DeletePost(
-            new PostsRepository(
-                new PDO('sqlite:'.__DIR__.'/blog.sqlite')
-            )
-        )
+        '/posts' => DeletePost::class
     ]
 ];
 
@@ -67,7 +59,9 @@ if (!array_key_exists($method, $routs) || !array_key_exists($path, $routs[$metho
     return;
 }
 
-$action = $routs[$method][$path];
+$actionClassName = $routs[$method][$path];
+
+$action = $container->get($actionClassName);
 
 try {
     $response = $action->handle($request);
