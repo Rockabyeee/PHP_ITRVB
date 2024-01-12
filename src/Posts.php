@@ -5,10 +5,10 @@ namespace my;
 class Posts
 {
     public function __construct(
-        private $id,
-        private $authorId,
-        private $title,
-        private $text
+        private UUID $uuid,
+        private UUID $authorUuid,
+        private string $title,
+        private string $text
     )
     {
 
