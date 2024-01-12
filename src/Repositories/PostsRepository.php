@@ -39,25 +39,29 @@ class PostsRepository implements PostsRepositoryInterface
         );
     }
 
-    public function save(Posts $post): void {
-        $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM users WHERE uuid = :uuid");
-        $stmt->execute([':uuid' => $post->getAuthorUuid()]);
-        if ($stmt->fetchColumn() == 0) {
-            throw new PostIncorrectDataException("Author UUID {$post->getAuthorUuid()} not found");
-        }
-
+    public function save(Posts $posts): void {
         $stmt = $this->pdo->prepare("INSERT INTO posts (uuid, author_uuid, title, text) 
             VALUES (:uuid, :author_uuid, :title, :text)");
 
         try {
             $stmt->execute([
-                ':uuid' => $post->getUuid(),
-                ':author_uuid' => $post->getAuthorUuid(),
-                ':title' => $post->getTitle(),
-                ':text' => $post->getText()
+                ':uuid' => $posts->getUuid(),
+                ':author_uuid' => $posts->getAuthorUuid(),
+                ':title' => $posts->getTitle(),
+                ':text' => $posts->getText()
             ]);
         } catch (PDOException $e) {
-            throw new PostIncorrectDataException("Error when save post: " . $e->getMessage());
+            throw new PostIncorrectDataException("Error to save: " . $e->getMessage());
+        }
+    }
+
+    public function delete(string $uuid): void
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM posts WHERE uuid = :uuid");
+        $stmt->execute([':uuid' => $uuid]);
+
+        if ($stmt->rowCount() === 0) {
+            throw new PostNotFoundException("Post with UUID $uuid not found");
         }
     }
 }
